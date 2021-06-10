@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="options.css" />
+  </head>
+
+  <body>
+    <section class="clear-options data-types">
+      <section class="clear-options">
+        <span class="title">Intrests:</span>
+        <select id="since">
+          <option value="0.06" selected>6%</option>
+          <option value="0.10">10%</option>
+        </select>
+      </section>
+
+      <div class="title">Years to Predict:</div>
+
+      <label>
+        Years
+        <input type="number" min="1" max="5" data-type="Years" />
+      </label>
+    </section>
+
+    <input type="button" value="Save preferences" id="save-button" />
+
+    <script src="options.js"></script>
+  </body>
+</html>
