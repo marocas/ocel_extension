@@ -1,4 +1,4 @@
-# ocel_extension
+# Ocel
 
 Converts your Cryptocurrencies into current market value and appends to the current browser view. 
 
