@@ -7,7 +7,7 @@ var css = `
     position: relative;
   }
 
-  .predictions {
+  .previsions {
     padding: 60px 60px 30px;
     background-color: #fffffe;
     z-index: 9999;
@@ -15,8 +15,8 @@ var css = `
     top: 50%;
     transform: translateY(-50%);
   }
-  .show-predictions,
-  .show-predictions::before {
+  .show-previsions,
+  .show-previsions::before {
     width: 100%;
     height: 100%;
     display: block;
@@ -25,10 +25,10 @@ var css = `
     left: 50%;
     transform: translate(-50%, -50%);
   }
-  .show-predictions {
+  .show-previsions {
     z-index: 9999;
   }
-  .show-predictions::before {
+  .show-previsions::before {
     background-color: rgba(0, 0, 0, 0.3);
     content: '';
   }
@@ -53,15 +53,15 @@ function onError(error) {
 }
 
 function handleMessage(request, sender, sendResponse) {
-  console.log("Request command => " + request.command);
-
   if (request.command === "show") {
     browser.tabs.insertCSS({ code: css })
     sendResponse({ command: "show" })
   }
-  else {
-    browser.tabs.removeCSS({ code: css })
-    sendResponse({ command: "reset" })
+  else if (request.command === "options") {
+    console.log('background options =>')
+    browser.runtime.sendMessage({ command: 'options' }, (response) => {
+      sendResponse({ command: "options", response })
+    })
   }
 }
 

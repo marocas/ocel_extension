@@ -2,13 +2,13 @@
   "description": "Adds new divs for converting crypto amount into currency.",
   "manifest_version": 2,
   "name": "Ocel | Converter Crypto",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "icons": {
     "32": "icons/32.png"
   },
 
-  "permissions": ["https://ocel.pt/*"],
+  "permissions": ["storage", "https://ocel.pt/*"],
 
   "browser_action": {
     "default_icon": "icons/48.png",

@@ -1,71 +1,60 @@
 var browser = !!browser && browser || !!chrome && chrome
 
 let ocel = {
-  intrestes: 0.10,
+  years: 2,
+  fees: 0.06,
   values: [],
-  predictions: [],
+  previsions: [],
+  widgets: document.querySelectorAll('.app-main__inner .widget-heading'),
   crypto: [
     {
       name: "btc",
-      value: 0,
-      investiment: 0,
-      converted: 0
     },
     {
       name: "eth",
-      value: 0,
-      investiment: 0,
-      converted: 0
     },
   ],
-  template: (args) => {
-    return `
-      <div class="col-12 col-md-4">
-        <div class="card mb-3 widget-content badge-warning">
-          <div class="widget-content-wrapper text-white">
-            <div class="widget-content-left">
-              <div class="widget-heading">${args.name.toUpperCase()}(EUR)</div>
-              <div class="widget-subheading">Converted on Market Price</div>
-            </div>
-            <div class="widget-content-right">
-              <div class="widget-numbers text-white">
-                <span>${ocel.roundAccurately((args.investiment * args.eur), 2)}</span>
+  templates: {
+    investiment: ({ investiment, value, currency }) => (`
+        <i class="metismenu-icon pe-7s-calculator"></i>
+        ${ocel.roundAccurately((investiment * value), 2)} ${currency}
+    `),
+    previsions: () => (`
+      <a class="show" href="/ocel/users/?previsions=show">
+        <i class="metismenu-icon pe-7s-graph1"></i>
+        Show Prevision
+      </a>
+    `),
+    popup: {
+      markup: () => (`<div class="container previsions">
+          <button class="reset">X</button>
+          <div class="row">
+            HTML_CONTENT
+          </div>
+        </div>
+      `),
+      card: ({ y, n, c, v, currency }) => (`
+        <div class="cards col-12 col-sm-6">
+          <div class="card widget-content bg-midnight-bloom">
+            <div class="widget-content-wrapper text-white">
+              <div class="widget-content-left">
+                <div class="widget-heading">Prevision of ${y}</div>
+                <div class="widget-subheading">${n}</div>
+              </div>
+              <div class="widget-content-right">
+                <div class="widget-numbers text-white">
+                  <span>${c}</span>
+                </div>
+                <div style="text-align: right;" class="market-value">
+                    <i class="metismenu-icon pe-7s-calculator"></i>
+                    ${v} ${currency}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      <div class="col-12 col-md-4">
-        <div class="card mb-3 widget-content badge-warning">
-          <div class="widget-content-wrapper text-white">
-            <div class="widget-content-left">
-              <div class="widget-heading">${args.name.toUpperCase()}(BRL)</div>
-              <div class="widget-subheading">Converted on Market Price</div>
-            </div>
-            <div class="widget-content-right">
-              <div class="widget-numbers text-white">
-                <span>${ocel.roundAccurately((args.investiment * args.brl), 2)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-12 col-md-4">
-        <div class="card mb-3 widget-content badge-warning">
-          <div class="widget-content-wrapper text-white">
-            <div class="widget-content-left">
-              <div class="widget-heading">${args.name.toUpperCase()}(USD)</div>
-              <div class="widget-subheading">Converted on Market Price</div>
-            </div>
-            <div class="widget-content-right">
-              <div class="widget-numbers text-white">
-                <span>${ocel.roundAccurately((args.investiment * args.usd), 2)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `
+        </div>`
+      ),
+    }
   },
   roundAccurately: (number, decimalPlaces) => {
     return Number(Math.round(number + "e" + decimalPlaces) + "e-" + decimalPlaces)
@@ -76,57 +65,26 @@ let ocel = {
   },
 }
 
-if (!document.querySelector('.showPredictions')) {
+// Previsions menu item
+if (!document.querySelector('.showPrevisions')) {
   const content = document.createElement('li')
-  content.innerHTML = `
-    <a class="show" href="/ocel/users/?predictions=show">
-      <i class="metismenu-icon pe-7s-display2"></i>
-      Show Predictions
-    </a>
-  `
+  content.innerHTML = ocel.templates.previsions()
 
   document.querySelector('.vertical-nav-menu').appendChild(content)
 }
 
-const card = ({ y, n, c, v }) => {
-  return `<div class="cards col-12 col-sm-6">
-      <div class="card widget-content bg-midnight-bloom">
-        <div class="widget-content-wrapper text-white">
-          <div class="widget-content-left">
-            <div class="widget-heading">Investiment in ${y}</div>
-            <div class="widget-subheading">${n}</div>
-          </div>
-          <div class="widget-content-right">
-            <div class="widget-numbers text-white">
-              <span>${c}</span>
-              <br>
-              <span>Value: €${v}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>`
-}
-
-const markupHTML = () => {
-  return `<div class="container predictions">
-      <button class="reset">X</button>
-      <div class="row">
-        HTML_CONTENT
-      </div>
-    </div>`
-}
-
+// helper
 const insertAfter = (referenceNode, newNode) => {
   referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
 
+// gether all necessary information from crypto
 const getValues = function(name) {
   nameLowerCase = name
   name = name.toUpperCase()
-  if (!!document.querySelectorAll('.app-main__inner .widget-heading')) {
-    let values = {}
-    Array.from(document.querySelectorAll('.app-main__inner .widget-heading')).forEach(function(elm) {
+  if (!!ocel.widgets) {
+    let values = []
+    Array.from(ocel.widgets).forEach(function(elm) {
       if (
         elm.innerText === `Investiment ${name}` ||
         elm.innerText === `${name}(EUR)` ||
@@ -135,140 +93,191 @@ const getValues = function(name) {
         elm.innerText === `Wallet ${name}` ||
         elm.innerText === `${name}(USD)`
       ) {
-        let sibling = elm.parentElement.nextElementSibling
-        let value = sibling.innerText.replace(',', '')
+        let target = elm.parentElement.nextElementSibling
+        let value = target.innerText.replace(',', '')
 
         switch (elm.innerText) {
           case `Investiment ${name}`:
-            sibling.id = `investiment-${nameLowerCase}`
-            values = {
+            target.id = `investiment-${nameLowerCase}`
+            values = [
               ...values,
-              parent: elm.closest('.row'),
-              investiment: value
-            }
+              {
+                name,
+                investiment: value,
+              }
+            ]
             break;
           case `Total Income ${name}`:
-            sibling.id = `income-${nameLowerCase}`
-            values = {
+            target.id = `income-${nameLowerCase}`
+            values = [
               ...values,
-              income: value
-            }
+              {
+                name,
+                income: value,
+                investiment: values[0].investiment,
+              }
+            ]
             break;
           case `Wallet ${name}`:
-            sibling.id = `wallet-${nameLowerCase}`
-            values = {
+            target.id = `wallet-${nameLowerCase}`
+            values = [
               ...values,
-              wallet: value
-            }
+              {
+                name,
+                wallet: value,
+                investiment: values[0].investiment,
+              }
+            ]
             break;
           case `${name}(EUR)`:
-            values = {
+            values = [
               ...values,
-              eur: value
-            }
+              {
+                name,
+                target,
+                value,
+                currency: "EUR"
+              }
+            ]
             break;
           case `${name}(BRL)`:
-            values = {
+            values = [
               ...values,
-              brl: value
-            }
+              {
+                name,
+                target,
+                value,
+                currency: "BRL"
+              }
+            ]
             break;
           case `${name}(USD)`:
-            values = {
+            values = [
               ...values,
-              usd: value
-            }
+              {
+                name,
+                target,
+                value,
+                currency: "USD"
+              }
+            ]
             break;
         }
       }
     })
 
-    return values
+    values = [
+      { ...values[0], ...values[3] },
+      { ...values[1], ...values[4] },
+      { ...values[2], ...values[5] },
+      { ...values[6], ...values[9] },
+      { ...values[7], ...values[10] },
+      { ...values[8], ...values[11] },
+    ]
+    return values.filter((object) => Object.keys(object).length > 0)
   }
 }
 
 ocel.crypto.forEach(function({ name }) {
   const values = getValues(name)
-
-  ocel.values.push({ name, ...values })
-
-  let markupHtml = ocel.template({ name, ...values })
-  let container = document.createElement('div')
-
-  container.className = 'row';
-  container.innerHTML = markupHtml;
-
-  insertAfter(values.parent, container)
+  ocel.values.push(...values)
 });
 
-const convert = async ({ name, eur, investiment }) => {
+const appendResults = () => {
+  ocel.values.map((values) => {
+    const { target } = values;
+    let markupHtml = ocel.templates.investiment({ ...values })
+
+    let container = document.createElement('div')
+
+    container.style = 'text-align: right;'
+    container.className = 'market-value';
+    container.innerHTML = markupHtml;
+
+    target.appendChild(container)
+  })
+}
+appendResults()
+
+
+const convert = async ({ name, value, investiment, currency }) => {
   name = name.toUpperCase()
-  const cryptoValue = Number(eur)
+  const cryptoValue = Number(value)
   investiment = Number(investiment)
 
   var year = 0;
-  for (let i = 1; i <= (12 * 4); i++) {
-    investiment = ocel.roundAccurately(ocel.intrestes * investiment, 9) + investiment
+  for (let i = 1; i <= (12 * ocel.years); i++) {
+    investiment = ocel.roundAccurately(ocel.fees * investiment, 9) + investiment
 
     let crypto = ocel.roundAccurately(investiment, 9)
     let marketValue = ocel.roundAccurately((ocel.roundAccurately(investiment, 9) * cryptoValue), 2)
 
-    if (ocel.isMultipleOf(i)) {
+    if (ocel.isMultipleOf(i) && marketValue > 0) {
       year = year + 1
 
       console.log(`${year} ${year < 2 ? 'year' : 'years'} of interests => \nBTC: ${crypto}\nvalue: €${marketValue}\n===`)
 
-      ocel.predictions.push({
+      ocel.previsions.push({
         y: year < 2 ? `${year} year` : `${year} years`,
         n: name,
         c: crypto,
         v: marketValue,
+        currency,
       })
     }
   }
-
-  return console.log('convert =>', name, cryptoValue, investiment)
 }
 
-const showPredictions = async () => {
-  ocel.predictions = []
+const showPrevisions = async () => {
+  ocel.previsions = []
 
-  let predictions = document.createElement("div");
-  predictions.className = "show-predictions -js-hidden";
+  let previsions = document.createElement("div");
+  previsions.className = "show-previsions -js-hidden";
 
-  for (let values of ocel.values) {
-    if (values.investiment > 0) {
-      await convert(values)
+  for (let object of ocel.values) {
+    if (object.investiment > 0 && !(object.hasOwnProperty('income') || object.hasOwnProperty('wallet'))) {
+      await convert(object)
     }
   }
 
   let cards = ''
-  ocel.predictions.forEach((prediction) => {
-    cards += card(prediction)
+  ocel.previsions.forEach((previsions) => {
+    cards += ocel.templates.popup.card(previsions)
   })
 
-  predictions.innerHTML = markupHTML().replace('HTML_CONTENT', cards);
-  document.body.appendChild(predictions);
+  previsions.innerHTML = ocel.templates.popup.markup().replace('HTML_CONTENT', cards);
+  document.body.appendChild(previsions);
 }
 
-function removeExistingPredictions() {
-  let existingPredictions = document.querySelectorAll(".show-predictions");
-  for (let prediction of existingPredictions) {
-    prediction.remove();
+function removeExistingPrevisions() {
+  let existingPrevisions = document.querySelectorAll(".show-previsions");
+  for (let previsions of existingPrevisions) {
+    previsions.remove();
   }
 }
 
 function handleResponse(message) {
-  console.log(`Message from the background script:  ${message.response}`);
-  removeExistingPredictions();
+  removeExistingPrevisions();
 
   if (message.command === "show") {
-    showPredictions()
+    showPrevisions()
+  }
+  else if (message.command === 'options') {
+    const { years, fees } = message
+    ocel.years = Number(years)
+    ocel.fees = Number(fees)
   }
 }
 
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('previsions')) {
+  browser.runtime.sendMessage({ command: urlParams.get('previsions') }, (response) => {
+    handleResponse(response)
+  })
+}
+
 function handleError(error) {
-  console.log(`Error: ${error}`);
+  console.error(`Error: ${error}`);
 }
 
 function notifyBackgroundPage(e) {
@@ -279,13 +288,11 @@ function notifyBackgroundPage(e) {
 
   if (target.classList.contains('show')) {
     e.preventDefault()
-    console.log(`target =>`, target);
     browser.runtime.sendMessage({ command: "show" }, (response) => {
       handleResponse(response)
     })
   } else if (target.classList.contains('reset')) {
     e.preventDefault()
-    console.log(`target =>`, target);
     browser.runtime.sendMessage({ command: "reset" }, (response) => {
       handleResponse(response)
     })
@@ -294,9 +301,14 @@ function notifyBackgroundPage(e) {
 
 document.addEventListener("click", notifyBackgroundPage);
 
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.has('predictions')) {
-  browser.runtime.sendMessage({ command: urlParams.get('predictions') }, (response) => {
-    handleResponse(response)
-  })
-}
+browser.runtime.sendMessage({ command: 'options' }, (response) => {
+  handleResponse({ ...response, command: 'options' })
+})
+
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes.options?.newValue) {
+    const { years, fees } = changes.options.newValue
+    handleResponse({ command: 'options', years, fees })
+  }
+});
+
