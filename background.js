@@ -47,6 +47,14 @@ var css = `
   }
 `
 
+function onOpened() {
+  console.log(`Options page opened`);
+}
+
+function onError(error) {
+  console.log(`Error: ${error}`);
+}
+
 // background-script.js
 function onError(error) {
   console.log(`Error: ${error}`);
@@ -57,9 +65,17 @@ function handleMessage(request, sender, sendResponse) {
     browser.tabs.insertCSS({ code: css })
     sendResponse({ command: "show" })
   }
+  else if (request.command === "reset") {
+    browser.tabs.removeCSS({ code: css })
+    sendResponse({ command: "reset" })
+  }
   else if (request.command === "options") {
-    console.log('background options =>')
     browser.runtime.sendMessage({ command: 'options' }, (response) => {
+      if (!(response?.hasOwnProperty('years') && response?.hasOwnProperty('fees'))) {
+        var opening = browser.runtime.openOptionsPage();
+        opening.then(onOpened, onError);
+      }
+
       sendResponse({ command: "options", response })
     })
   }

@@ -256,14 +256,16 @@ function removeExistingPrevisions() {
   }
 }
 
-function handleResponse(message) {
+function handleResponse(response) {
+  if (!response.hasOwnProperty('command')) return console.log('no command found', response)
+  const { command } = response
   removeExistingPrevisions();
 
-  if (message.command === "show") {
+  if (command === "show") {
     showPrevisions()
   }
-  else if (message.command === 'options') {
-    const { years, fees } = message
+  else if (command === 'options' && !!response?.status) {
+    const { status: { years, fees } } = response
     ocel.years = Number(years)
     ocel.fees = Number(fees)
   }
@@ -282,9 +284,6 @@ function handleError(error) {
 
 function notifyBackgroundPage(e) {
   const target = e.target
-  if (location.href !== 'https://ocel.pt/ocel/users') {
-
-  }
 
   if (target.classList.contains('show')) {
     e.preventDefault()
@@ -308,7 +307,7 @@ browser.runtime.sendMessage({ command: 'options' }, (response) => {
 browser.storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes.options?.newValue) {
     const { years, fees } = changes.options.newValue
-    handleResponse({ command: 'options', years, fees })
+    handleResponse({ command: 'options', status: { years, fees } })
   }
 });
 
